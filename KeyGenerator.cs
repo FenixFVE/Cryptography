@@ -8,7 +8,7 @@ namespace Cryptography
     {
         public static List<char> RussianAlphabet()
         {
-            List<char> alphabet = Enumerable.Range(0, 32).Select((x, i) => (char)('а' + i)).ToList();
+            List<char> alphabet = Enumerable.Range(0, 32).Select((i, x) => (char)('а' + i)).ToList();
             alphabet.Insert(6, 'ё');
             return alphabet;
         }
