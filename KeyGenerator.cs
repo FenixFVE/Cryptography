@@ -6,21 +6,26 @@ namespace Cryptography
 {
     public class KeyGenerator
     {
-        
+        public static List<char> RussianAlphabet()
+        {
+            List<char> alphabet = Enumerable.Range(0, 32).Select((x, i) => (char)('а' + i)).ToList();
+            alphabet.Insert(6, 'ё');
+            return alphabet;
+        }
         public static string RandomRussianKey()
         {
-            List<char> let = Enumerable.Range(0, 32).Select((x, i) => (char)('а' + i)).ToList();
-            let.Insert(6, 'ё');
-            Random random = new Random();
-            return new string(let.OrderBy(x => random.Next()).ToArray());
+            var alphabet  = RussianAlphabet();
+            var random = new Random();
+            var shuffledAlphabet = alphabet.OrderBy(x => random.Next()).ToArray();
+            return new string(shuffledAlphabet);
         }
-
         public static void CreateRussianKey(string fileName)
         {
-            using (var sw = new StreamWriter(File.Open(fileName, FileMode.OpenOrCreate), Encoding.UTF8))
+            var stream = File.Open(fileName, FileMode.OpenOrCreate);
+            using (var writer = new StreamWriter(stream, Encoding.UTF8))
             {
                 string russianKey = RandomRussianKey();
-                sw.WriteLine(russianKey);
+                writer.WriteLine(russianKey);
             }
         }
     }
