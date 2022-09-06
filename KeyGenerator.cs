@@ -21,7 +21,7 @@ namespace Cryptography
         }
         public static void CreateRussianKey(string fileName)
         {
-            var stream = File.Open(fileName, FileMode.OpenOrCreate);
+            using (var stream = File.Open(fileName, FileMode.OpenOrCreate))
             using (var writer = new StreamWriter(stream, Encoding.UTF8))
             {
                 string russianKey = RandomRussianKey();
