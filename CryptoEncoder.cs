@@ -9,30 +9,32 @@ namespace Cryptography
 {
     public class CryptoEncoder
     {
-        private Dictionary<char, char> Encoder { get; set; }
+        private Dictionary<char, char> Encoder { get; }
 
         public CryptoEncoder(string keyFile)
         {
             using (var streamReader = new FileStream(keyFile, FileMode.Open, FileAccess.Read))
             using (var reader = new StreamReader(streamReader, Encoding.UTF8))
             {
-                List<char> russianAlphabet = KeyGenerator.RussianAlphabet();
-                List<char> key = reader.ReadToEnd().ToList();
-                Encoder = new Dictionary<char, char>(russianAlphabet.Count);
-                for (int i = 0; i < russianAlphabet.Count; i++)
+                var values = reader.ReadToEnd().ToList();
+                if (values is null || values.Count != 33)
                 {
-                    Encoder.Add(russianAlphabet[i], key[i]);
+                    throw new ArgumentException("key is invalid");
                 }
+                var keys = KeyGenerator.RussianAlphabet();
+                Encoder = keys
+                    .Zip(values, (k, v) => new { k, v })
+                    .ToDictionary(x => x.k, x => x.v);
             }
         }
-        public void TextFormater(string inputFile, string outputFile)
+        public static void TextFormater(string rawFile, string formatedFile)
         {
             var rgx1 = new Regex(@"(\W|\d)");
 
-            using (var streamWriter = new FileStream(outputFile, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var streamWriter = new FileStream(formatedFile, FileMode.OpenOrCreate, FileAccess.Write))
             using (var writer = new StreamWriter(streamWriter, Encoding.UTF8))
             {
-                using (var streamReader = new FileStream(inputFile, FileMode.Open, FileAccess.Read))
+                using (var streamReader = new FileStream(rawFile, FileMode.Open, FileAccess.Read))
                 using (var reader = new StreamReader(streamReader, Encoding.UTF8))
                 {
                     while (!reader.EndOfStream)
@@ -48,12 +50,12 @@ namespace Cryptography
  
         }
 
-        public void TextEncoder(string inputFile, string outputFile)
+        public void TextEncoder(string formatedFile, string encodedFile)
         {
-            using (var streamWriter = new FileStream(outputFile, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var streamWriter = new FileStream(encodedFile, FileMode.OpenOrCreate, FileAccess.Write))
             using (var writer = new StreamWriter(streamWriter, Encoding.UTF8))
             {
-                using (var streamReader = new FileStream(inputFile, FileMode.Open, FileAccess.Read))
+                using (var streamReader = new FileStream(formatedFile, FileMode.Open, FileAccess.Read))
                 using (var reader = new StreamReader(streamReader, Encoding.UTF8))
                 {
                     string text = reader.ReadToEnd();
