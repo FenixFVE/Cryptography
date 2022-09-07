@@ -1,17 +1,18 @@
-﻿using Cryptography;
+﻿
+using Cryptography;
 using System.Text;
 
 Console.OutputEncoding = Encoding.UTF8;
+var language = Language.Russian;
 
-//KeyGenerator.CreateRussianKey("test.txt");
+//var keyGenerator = new RussianKeyGenerator();
+//keyGenerator.CreateKey("key.txt");
 
-var encoder = new CryptoEncoder("test.txt");
+var key = FileManager.Read("key.txt");
 
-//encoder.TextFormater("input.txt", "formated.txt");
-//encoder.TextEncoder("formated.txt", "output.txt");
+var encoder = new CryptoEncoder(key, language);
+encoder.EncodeFile("text.txt", "encoded_text.txt");
 
-
-CryptoEncoder.TextFormater("book.txt", "formated_book.txt");
-var decoder = new CryptoDecoder();
-decoder.CountFrequency("formated_book.txt");
-
+var decoder = new CryptoDecoder(language);
+decoder.SetKey(key);
+decoder.DecodeFile("encoded_text.txt", "decoded_text.txt");

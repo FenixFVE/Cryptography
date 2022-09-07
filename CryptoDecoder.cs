@@ -1,45 +1,68 @@
 ﻿
-using System;
 using System.Text;
-using Cryptography;
 
 namespace Cryptography
 {
-    
     public class CryptoDecoder
     {
-        private Dictionary<char, char> Decoder { get; }
+        private bool _haveKey { get; set; }
+        private Dictionary<char, char> _decoder { get; set; }
+        private Language _language { get; }
 
-        public CryptoDecoder() 
+        public CryptoDecoder(Language language)
         {
-            Decoder = new Dictionary<char, char>(33);
+            _haveKey = false;
+            _language = language;
+            _decoder = new Dictionary<char, char>((int)_language);
         }
 
-        public CryptoDecoder(string keyFile)
+        public CryptoDecoder(string key, Language language)
         {
-            using (var streamReader = new FileStream(keyFile, FileMode.Open, FileAccess.Read))
-            using (var reader = new StreamReader(streamReader, Encoding.UTF8))
+            _haveKey = true;
+            _language = language;
+            _decoder = new();
+            SetKey(key);
+        }
+        public string TextDecoder(string Data)
+        {
+            if (!_haveKey)
             {
-                var keys = reader.ReadToEnd().ToList<char>();
-                if (keys is null || keys.Count != 33)
-                {
-                    throw new ArgumentException("key is invalid");
-                }
-                var values = KeyGenerator.RussianAlphabet();
-                Decoder = keys
-                    .Zip(values, (k, v) => new {k, v})
-                    .ToDictionary(x => x.k, x => x.v);
+                throw new Exception("There is no key");
             }
+            StringBuilder builder = new StringBuilder();
+            builder.Capacity = Data.Length;
+            foreach (char ch in Data)
+            {
+                builder.Append(_decoder[ch]);
+            }
+            return builder.ToString();
+        }
+        public void DecodeFile(string encodedFile, string decodedFile)
+        {
+            var encodedData = FileManager.Read(encodedFile);
+            var decodedData = TextDecoder(encodedData);
+            FileManager.Write(decodedFile, decodedData);
         }
 
-        public void TextDecoder(string encodedFile, string decodedFile)
+        public void SetKey(string key)
         {
-            if (Decoder.Count != 33)
+            var keys = key.ToList<char>();
+            if (keys.Count != (int)_language)
             {
-                throw new Exception("There is no valid key");
+                throw new ArgumentException("Key is invalid");
             }
-            // TO DO
+            var values = KeyGenerator.KeyGeneratorForLanguage(_language).Alphabet();
+            _decoder = keys
+                .Zip(values, (k, v) => new { k, v })
+                .ToDictionary(x => x.k, x => x.v);
+            _haveKey = true;
         }
+
+        public static string FindKey()
+        {
+            throw new NotImplementedException(); // TO DO
+        }
+
         /*
         public void CountFrequency(string sampleText)
         {

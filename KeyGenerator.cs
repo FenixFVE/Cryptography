@@ -1,32 +1,34 @@
 ﻿
-using System;
-using System.Text;
-
 namespace Cryptography
 {
-    public class KeyGenerator
+    public enum Language : int
     {
-        public static List<char> RussianAlphabet()
+        English = 26,
+        Russian = 33,
+    }
+
+    public abstract class KeyGenerator
+    {
+        public abstract Language language { get; }
+        public abstract List<char> Alphabet();
+        public string RandomKey()
         {
-            List<char> alphabet = Enumerable.Range(0, 32).Select((i, x) => (char)('а' + i)).ToList();
-            alphabet.Insert(6, 'ё');
-            return alphabet;
-        }
-        public static string RandomRussianKey()
-        {
-            var alphabet  = RussianAlphabet();
+            var alphabet = Alphabet();
             var random = new Random();
             var shuffledAlphabet = alphabet.OrderBy(x => random.Next()).ToArray();
             return new string(shuffledAlphabet);
         }
-        public static void CreateRussianKey(string fileName)
+        public void CreateKey(string fileName)
         {
-            using (var stream = File.Open(fileName, FileMode.OpenOrCreate))
-            using (var writer = new StreamWriter(stream, Encoding.UTF8))
-            {
-                string russianKey = RandomRussianKey();
-                writer.WriteLine(russianKey);
-            }
+            string russianKey = RandomKey();
+            FileManager.Write(fileName, russianKey);
         }
+        public static KeyGenerator KeyGeneratorForLanguage(Language language) =>
+            language switch
+            {
+                Language.Russian => new RussianKeyGenerator(),
+                Language.English => new EnglishKeyGenerator(),
+                _ => throw new Exception($"KeyGenerator for {Enum.GetName(typeof(Language), language)} language is not supported"),
+            };
     }
 }
