@@ -46,6 +46,7 @@ namespace Cryptography
 
         public void SetKey(string key)
         {
+            //Console.WriteLine(key);
             var keys = key.ToList<char>();
             if (keys.Count != (int)_language)
             {

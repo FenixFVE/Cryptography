@@ -21,7 +21,7 @@ namespace Cryptography
 
         public static void Write(string fileName, string data)
         {
-            using (var streamWriter = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var streamWriter = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             using (var writer = new StreamWriter(streamWriter, Encoding.UTF8))
             {
                 writer.Write(data);
