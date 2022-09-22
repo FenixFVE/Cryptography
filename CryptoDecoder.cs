@@ -59,7 +59,7 @@ namespace Cryptography
             _decoder = new Dictionary<char, char>((int)_language);
             for (int i = 0; i < keys.Count; i++)
             {
-                if (_decoder.ContainsKey(keys[i]))
+                if (!_decoder.ContainsKey(keys[i]))
                 {
                     _decoder.Add(keys[i], values[i]);
                 }

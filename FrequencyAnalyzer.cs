@@ -5,7 +5,7 @@ namespace Cryptography
 {
     public class FrequencyAnalyzer
     {
-        private const int _size = 2;
+        private const int _size = 1;
         public List<string> Count(string text)
         {
             var frequency = new Dictionary<string, int>(text.Length);
@@ -50,7 +50,7 @@ namespace Cryptography
             var alphabet = KeyGenerator.KeyGeneratorForLanguage(language).Alphabet();
             var memory = new Dictionary<char, char>((int)language);
             var keys = new List<char>((int)language);
-            int max = Math.Min(sample.Count, encrypted.Count) - 1;
+            int max = Math.Min(sample.Count, encrypted.Count) - (_size == 1 ? 0 : 1);
             foreach (char letter in alphabet)
             {
                 for (int line = 0; line < max; line++)
