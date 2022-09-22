@@ -53,38 +53,19 @@ namespace Cryptography
                 throw new ArgumentException("Key is invalid");
             }
             var values = KeyGenerator.KeyGeneratorForLanguage(_language).Alphabet();
-            _decoder = keys
-                .Zip(values, (k, v) => new { k, v })
-                .ToDictionary(x => x.k, x => x.v);
+            //_decoder = keys
+            //    .Zip(values, (k, v) => new { k, v })
+            //    .ToDictionary(x => x.k, x => x.v);
+            _decoder = new Dictionary<char, char>((int)_language);
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (_decoder.ContainsKey(keys[i]))
+                {
+                    _decoder.Add(keys[i], values[i]);
+                }
+            }
 
             _haveKey = true;
         }
-
-        public static string FindKey()
-        {
-            throw new NotImplementedException(); // TO DO
-        }
-
-        /*
-        public void CountFrequency(string sampleText)
-        {
-
-            using (var streamReader = new FileStream(sampleText, FileMode.Open, FileAccess.Read))
-            using (var reader = new StreamReader(streamReader, Encoding.UTF8))
-            {
-                string text = reader.ReadToEnd();
-                var frequency = text
-                    .GroupBy(x => x)
-                    .ToDictionary(g => g.Key, g => g.Count())
-                    .OrderBy(x => x.Value)
-                    .ToList();
-            }
-            foreach (var (a, b) in _frequency)
-            {
-                Console.WriteLine($"{a}: {b}");
-            }
-
-        }
-        */
     }
 }
