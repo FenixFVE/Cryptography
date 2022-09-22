@@ -56,6 +56,7 @@ namespace Cryptography
             _decoder = keys
                 .Zip(values, (k, v) => new { k, v })
                 .ToDictionary(x => x.k, x => x.v);
+
             _haveKey = true;
         }
 

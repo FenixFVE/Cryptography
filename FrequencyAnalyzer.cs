@@ -48,63 +48,82 @@ namespace Cryptography
         public string GetKey(List<string> sample, List<string> encrypted, Language language)
         {
             var alphabet = KeyGenerator.KeyGeneratorForLanguage(language).Alphabet();
+            var memory = new Dictionary<char, char>((int)language);
             var keys = new List<char>((int)language);
             int j = _size - 1;
             foreach (char letter in alphabet)
             {
                 for (int i = 0; i < sample.Count && i < encrypted.Count; i++)
                 {
-                    if (sample[i][j] == letter)
+                    if (sample[i][j] == letter && !keys.Contains(encrypted[i][j]))
                     {
-                        keys.Add(encrypted[i][j]);
-                        break;
+                        bool flag = true;
+                        for (int k = 0; k < _size; k++)
+                        {
+                            if (memory.ContainsKey(sample[i][k]))
+                            {
+                                if (memory[sample[i][k]] != encrypted[i][k])
+                                {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (flag)
+                        {
+                            if (!memory.ContainsKey(sample[i][j]))
+                            {
+                                memory.Add(sample[i][j], letter);
+                            }
+                            keys.Add(encrypted[i][j]);
+                            break;
+                        }
                     }
                 }
             }
             return new string(keys.ToArray());
         }
 
-        public string GetKey2(List<string> sample, List<string> encryted, Language language)
+        public string GetKey2(List<string> sample, List<string> encrypted, Language language)
         {
-
-            var indexes = KeyGenerator
-                .KeyGeneratorForLanguage(language)
-                .Alphabet()
-                .Zip(
-                    Enumerable
-                        .Range(0, (int)language)
-                        .ToList(), 
-                    (k, v) => new { k, v }
-                )
-                .ToDictionary(x => x.k, x => x.v);
-
-            var keys = Enumerable.Repeat('\0', (int)language).ToList();
-
-            for (int i = 0; i < sample.Count && i < encryted.Count; i++)
+            var alphabet = KeyGenerator.KeyGeneratorForLanguage(language).Alphabet();
+            var memory = new Dictionary<char, char>((int)language);
+            var keys = new List<char>((int)language);
+            int max = Math.Min(sample.Count, encrypted.Count);
+            foreach (char letter in alphabet)
             {
-                bool isFit = true;
-                for (int j = 0; j < _size; j++)
+                for (int line = 0; line < max; line++)
                 {
-                    char ch = keys[indexes[sample[i][j]]];
-                    if (ch != '\0' && ch != encryted[i][j])
+                    for (int letter_index = 0; letter_index < _size; letter_index++)
                     {
-                        isFit = false;
-                        break;
+                        if (sample[line][letter_index] == letter && !keys.Contains(encrypted[line][letter_index]))
+                        {
+                            bool flag = true;
+                            for (int letter_index_2 = 0; letter_index_2 < _size; letter_index_2++)
+                            {
+                                if (letter_index != letter_index_2 && memory.ContainsKey(sample[line][letter_index_2]) && memory[sample[line][letter_index_2]] != encrypted[line][letter_index_2])
+                                {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                            if (flag) 
+                            {
+                                if (!memory.ContainsKey(sample[line][letter_index]))
+                                {
+                                    memory.Add(sample[line][letter_index], letter);
+                                }
+                                keys.Add(encrypted[line][letter_index]);
+                                goto GetKeyExit;
+                            }
+                        }
                     }
                 }
-                if (isFit)
-                {
-                    for (int j = 0; j < _size; j++)
-                    {
-                        keys[indexes[sample[i][j]]] = encryted[i][j];
-                    }
-                }
-                if (!keys.Contains('\0')) break;
+                GetKeyExit: continue;
             }
 
-            return new string(keys.ToArray());
+             return new string (keys.ToArray());
         }
-
         public string TryToDecode(string sampleFile, string encodedText, Language language)
         {
             var sample = ReadSample(sampleFile);
@@ -114,8 +133,8 @@ namespace Cryptography
             {
                 stream.Append(encoded + '\n');
             }
-            FileManager.Write("attemptedSample.txt", stream.ToString());
-            var key = GetKey(sample, encodedSample, language);
+            FileManager.Write("attempted_data.txt", stream.ToString());
+            var key = GetKey2(sample, encodedSample, language);
             FileManager.Write("attempted_key.txt", key);
             var decoder = new CryptoDecoder(key, language);
             var decodedText = decoder.TextDecoder(encodedText);
