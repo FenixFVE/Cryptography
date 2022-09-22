@@ -15,8 +15,12 @@ namespace Cryptography
         {
             var alphabet = Alphabet();
             var random = new Random();
-            var shuffledAlphabet = alphabet.OrderBy(x => random.Next()).ToArray();
-            return new string(shuffledAlphabet);
+            for (int i = 0; i < alphabet.Count - 1; i++)
+            {
+                int pos = random.Next(i, alphabet.Count);
+                (alphabet[i], alphabet[pos]) = (alphabet[pos], alphabet[i]);
+            }
+            return new string(alphabet.ToArray());
         }
         public void CreateKey(string fileName)
         {

@@ -5,7 +5,7 @@ namespace Cryptography
 {
     public class FrequencyAnalyzer
     {
-        private const int _size = 1;
+        private const int _size = 2;
         public List<string> Count(string text)
         {
             var frequency = new Dictionary<string, int>(text.Length);
@@ -64,11 +64,59 @@ namespace Cryptography
             return new string(keys.ToArray());
         }
 
+        public string GetKey2(List<string> sample, List<string> encryted, Language language)
+        {
+
+            var indexes = KeyGenerator
+                .KeyGeneratorForLanguage(language)
+                .Alphabet()
+                .Zip(
+                    Enumerable
+                        .Range(0, (int)language)
+                        .ToList(), 
+                    (k, v) => new { k, v }
+                )
+                .ToDictionary(x => x.k, x => x.v);
+
+            var keys = Enumerable.Repeat('\0', (int)language).ToList();
+
+            for (int i = 0; i < sample.Count && i < encryted.Count; i++)
+            {
+                bool isFit = true;
+                for (int j = 0; j < _size; j++)
+                {
+                    char ch = keys[indexes[sample[i][j]]];
+                    if (ch != '\0' && ch != encryted[i][j])
+                    {
+                        isFit = false;
+                        break;
+                    }
+                }
+                if (isFit)
+                {
+                    for (int j = 0; j < _size; j++)
+                    {
+                        keys[indexes[sample[i][j]]] = encryted[i][j];
+                    }
+                }
+                if (!keys.Contains('\0')) break;
+            }
+
+            return new string(keys.ToArray());
+        }
+
         public string TryToDecode(string sampleFile, string encodedText, Language language)
         {
             var sample = ReadSample(sampleFile);
             var encodedSample = Count(encodedText);
+            var stream = new StringBuilder();
+            foreach (var encoded in encodedSample)
+            {
+                stream.Append(encoded + '\n');
+            }
+            FileManager.Write("attemptedSample.txt", stream.ToString());
             var key = GetKey(sample, encodedSample, language);
+            FileManager.Write("attempted_key.txt", key);
             var decoder = new CryptoDecoder(key, language);
             var decodedText = decoder.TextDecoder(encodedText);
             return decodedText;
