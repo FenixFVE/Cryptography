@@ -119,6 +119,7 @@ namespace Cryptography
                         }
                     }
                 }
+                Console.WriteLine($"didn't found {letter}");
                 GetKeyExit: continue;
             }
 
